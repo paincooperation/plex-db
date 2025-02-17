@@ -1,11 +1,9 @@
-import { log } from "console";
-import { generateKeyPairSync, KeyObject, privateDecrypt, randomBytes, randomUUID, UUID } from "crypto";
+import { generateKeyPairSync, randomUUID, UUID } from "crypto";
 import * as EventEmitter from "events";
-import { existsSync, statSync, readFileSync, lutimesSync } from "fs";
+import { existsSync, readFileSync } from "fs";
 import { stat, mkdir, writeFile, readFile, readdir, rm } from "fs/promises";
 import { normalize, resolve } from "path";
 import { dirname, join } from "path/posix";
-import { Server, Socket } from "socket.io";
 
 export type PlexMeta = {
 	name: string;
