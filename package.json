@@ -5,5 +5,5 @@
   "keywords": ["db", "lightweight", "real-time", "encrypted", "security"],
   "author": "paincooperation",
   "license": "UNLICENSED",
-  "description": "PlexDB - fast and secure DB solution."
+  "description": "A secure and fast database solution for real time, node apps."
 }
