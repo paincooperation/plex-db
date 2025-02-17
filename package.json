@@ -1,0 +1,9 @@
+{
+  "name": "plex-db",
+  "version": "1.0.0",
+  "main": "dist/main.js",
+  "keywords": ["db", "lightweight", "real-time", "encrypted", "security"],
+  "author": "paincooperation",
+  "license": "UNLICENSED",
+  "description": "PlexDB - fast and secure DB solution."
+}
