@@ -10,7 +10,7 @@ export type PlexMeta = {
 	indexes: Record<string, string>;
 };
 
-export default class PlexServer {
+export default class PlexDB {
 	/**
 	 * Create new Plex database at `path`.
 	 */
@@ -157,9 +157,9 @@ class Collection <T extends Data, S extends Schema<T>> {
 	public schema: S;
 	public name: string;
 	public dummy: T;
-	public readonly db: PlexServer;
+	public readonly db: PlexDB;
 
-	constructor (name: string, dummy: T, schema: S, db: PlexServer) {
+	constructor (name: string, dummy: T, schema: S, db: PlexDB) {
 		this.dummy = dummy;
 		this.name = name;
 		this.schema = schema;

@@ -1,3 +1,3 @@
-import PlexServer from "./Server";
+import PlexDB from "./Server";
 
-export default PlexServer;
+export default PlexDB;
