@@ -105,6 +105,12 @@ export default class PlexDB {
 
 	public events = new EventEmitter<{
 		"close": [];
+		read: [Data];
+		write: [Data];
+		modify: [Data];
+		create: [Data];
+		delete: [UUID];
+		query: [query: Partial<Data>, result: Data[]];
 	}>();
 
 	private readonly autosave = setInterval(() => {
@@ -145,7 +151,7 @@ type Schema<T extends Data> = {
 		required: boolean;
 	}>;
 }
-class Collection <T extends Data, S extends Schema<T>> {
+class Collection <T extends Data, S extends Schema<T> = Schema<T>> {
 	public schema: S;
 	public name: string;
 	public dummy: T;
@@ -207,6 +213,7 @@ class Collection <T extends Data, S extends Schema<T>> {
 			};
 		};
 	
+		this.db.events.emit("query", data, results);
 		return results;
 	};
 
@@ -232,6 +239,7 @@ class Collection <T extends Data, S extends Schema<T>> {
 			const obj = await this.db.storage.read(join("data", this.name, candidate)) as T;
 
 			if (Object.keys(data).every(key => data[key] === obj[key])) {
+				this.db.events.emit("query", data, [obj]);
 				return obj;
 			};
 		};
@@ -248,6 +256,7 @@ class Collection <T extends Data, S extends Schema<T>> {
 					await this.db.storage.remove(
 						join("index", this.name, key, pathsafe(data[key]))
 					);
+					this.db.events.emit("delete", data.id);
 				};
 			})
 		]);
@@ -264,8 +273,10 @@ class Collection <T extends Data, S extends Schema<T>> {
 		).entries());
 
 		return await Promise.all(entries.map(async ([index, id]) => {
+			var data = await this.db.storage.read(join("data", this.name, id));
+			this.db.events.emit("query", {}, data);
 			await wait(runtime * index);
-			return task((await this.db.storage.read(join("data", this.name, id))) as T);
+			return task(data as T);
 		}));
 	};
 
@@ -274,6 +285,7 @@ class Collection <T extends Data, S extends Schema<T>> {
 	};
 
 	public async write(data: T) {
+		this.db.events.emit("write", data);
 		return Promise.all([
 			this.db.storage.write(join("data", this.name, data.id), data),
 			...Object.keys(data).map(async key => {
@@ -287,12 +299,12 @@ class Collection <T extends Data, S extends Schema<T>> {
 						let ids = (await this.db.storage.read(indexPath)) as UUID[] || [];
 						ids.push(data.id);
 						await this.db.storage.write(indexPath, ids);
+						this.db.events.emit("write", data);
 					};
 				};
 			})
 		]);
 	};
-	
 
 	public async create (data: Partial<T>) {
 		for (let key in this.schema as any as T) {
@@ -317,6 +329,7 @@ class Collection <T extends Data, S extends Schema<T>> {
 					throw new Error("Schema requires unique value, but query found collision");
 		};
 
+		this.db.events.emit("create", data as T);
 		return data as T;
 	};
 };
