@@ -119,7 +119,7 @@ export default class PlexDB {
 	}, 5000);
 
 	constructor (db_folfer: string) {
-		this.root = db_folfer;
+		this.root = resolve(db_folfer);
 		this.meta = JSON.parse(readFileSync(join(this.root, ".plexmeta"), "utf-8"));
 
 		this.events.on("close", () => {});
