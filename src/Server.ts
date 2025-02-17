@@ -97,9 +97,8 @@ export default class PlexServer {
 			});
 		},
 		remove: async (path : string) => {
-			path = this.storage.prefix(path);
-			this.storage.cache.delete(path);
-			if (this.storage.exists(path)) await rm(path, {
+			this.storage.cache.delete(this.storage.prefix(path));
+			if (this.storage.exists(path)) await rm(this.storage.prefix(path), {
 				force: true,
 				recursive: true,
 			});
@@ -141,6 +140,14 @@ function pathsafe (data: any): string {
 	return Buffer.from(JSON.stringify(data), "utf-8").toString("hex");
 };
 
+function wait (ms: number) {
+	return new Promise<void>(res => {
+		setTimeout(() => {
+			res();
+		}, ms);
+	})
+}
+
 type Data = object & {id: UUID};
 type Schema<T extends Data> = {
 	[K in keyof T]: Partial<{
@@ -168,6 +175,9 @@ class Collection <T extends Data, S extends Schema<T>> {
 		};
 
 		this.db = db;
+
+		db.storage.makedir(join("data", name));
+		db.storage.makedir(join("index", name));
 
 		for (let key in schema) {
 			if (key === "id") {
@@ -241,8 +251,38 @@ class Collection <T extends Data, S extends Schema<T>> {
 		return void 0;
 	};	
 
-	public async delete () {
-		return;
+	public async delete (data: T) {
+		await Promise.all([
+			this.db.storage.remove(join("data", this.name, data.id)),
+			...Object.keys(data).map(async key => {
+				if (key === "id") return;
+				if (this.schema[key].index) {
+					await this.db.storage.remove(
+						join("index", this.name, key, pathsafe(data[key]))
+					);
+				};
+			})
+		]);
+	};
+
+	/**
+	 * 
+	 * @param task 
+	 * @param runtime predicted runtime in milisecconds
+	 */
+	public async queryAll (task: (data: T) => Promise<any>, runtime: number = 20) {
+		let entries = Array.from((
+			await this.db.storage.list(join("data", this.name))
+		).entries());
+
+		return await Promise.all(entries.map(async ([index, id]) => {
+			await wait(runtime * index);
+			return task((await this.db.storage.read(join("data", this.name, id))) as T);
+		}));
+	};
+
+	public async get (id: UUID) {
+		return await this.db.storage.read(join("data", this.name, id)) as T;
 	};
 
 	public async write(data: T) {
