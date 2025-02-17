@@ -1,12 +1,12 @@
 {
   "name": "@paincooperation/plex-db",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "main": "dist/main.js",
   "keywords": [
     "db",
     "lightweight",
     "real-time",
-	"database"
+    "database"
   ],
   "author": "paincooperation",
   "license": "UNLICENSED",
@@ -14,10 +14,5 @@
   "description": "A lightweight database solution for real time, node apps.",
   "devDependencies": {
     "@types/node": "^22.13.4"
-  },
-  "dependencies": {
-    "socket.io": "^4.8.1",
-    "socket.io-client": "^4.8.1"
   }
 }
- 
