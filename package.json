@@ -1,6 +1,6 @@
 {
   "name": "@paincooperation/plex-db",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "main": "dist/main.js",
   "keywords": [
     "db",
