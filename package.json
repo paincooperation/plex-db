@@ -2,8 +2,18 @@
   "name": "plex-db",
   "version": "1.0.0",
   "main": "dist/main.js",
-  "keywords": ["db", "lightweight", "real-time", "encrypted", "security"],
+  "keywords": [
+    "db",
+    "lightweight",
+    "real-time",
+    "encrypted",
+    "security"
+  ],
   "author": "paincooperation",
   "license": "UNLICENSED",
-  "description": "A secure and fast database solution for real time, node apps."
+  "types": "types/main.d.ts",
+  "description": "A secure and fast database solution for real time, node apps.",
+  "devDependencies": {
+    "@types/node": "^22.13.4"
+  }
 }
