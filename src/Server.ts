@@ -33,7 +33,6 @@ export default class PlexDB {
 
 	public readonly root: string;
 	private meta: PlexMeta;
-	private closing: boolean = false;
 
 	public storage = {
 		cache: new Map <string, any> (),
@@ -118,13 +117,6 @@ export default class PlexDB {
 		this.meta = JSON.parse(readFileSync(join(this.root, ".plexmeta"), "utf-8"));
 
 		this.events.on("close", () => {});
-	};
-
-	public async close () {
-		this.closing = true;
-		this.events.emit("close");
-		clearInterval(this.autosave);
-		await this.storage.write(join(".plexmeta"), this.meta);
 	};
 
 	public collection <T extends Data, S extends Schema<T>, C> (name: string, dummy: T, schema: S) {
