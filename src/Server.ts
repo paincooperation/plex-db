@@ -18,8 +18,6 @@ export default class PlexServer {
 		if (typeof path !== "string") throw new Error("Supply a valid path string!");
 		if (!(await stat(dirname(path))).isDirectory()) throw new Error("Cannot create DB here! " + path);
 
-		const {publicKey, privateKey} = generateKeyPairSync('rsa',{modulusLength: 2048});
-
 		if (!existsSync(path))
 			await mkdir(path);
 		await Promise.all([
