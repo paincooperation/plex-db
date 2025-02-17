@@ -142,7 +142,7 @@ function wait (ms: number) {
 	})
 }
 
-type Data = object & {id: UUID};
+type Data = Record<string, any> & {id: UUID};
 type Schema<T extends Data> = {
 	[K in keyof T]: Partial<{
 		index: boolean;
@@ -161,9 +161,9 @@ class Collection <T extends Data, S extends Schema<T> = Schema<T>> {
 		this.dummy = dummy;
 		this.name = name;
 		this.schema = schema;
-		this.schema[("id" as any)] = {
+		this.schema["id"] = {
 			index: true,
-			uniqure: true,
+			unique: true,
 			default: randomUUID,
 			required: true,
 		};
