@@ -1,43 +1,34 @@
-import { existsSync, readFileSync, statSync } from "fs";
-import { mkdir, stat, writeFile } from "fs/promises";
-import { dirname, join } from "path";
+import { log } from "console";
+import PlexServer from "./Server";
+import { randomBytes, UUID } from "crypto";
+import { resolve } from "path";
 
-type PlexMeta = {
-	name: string;
-	collections: string[];
-	indexes: Record<string, string>;
-};
+const password = "ZNlCfjv3whHeNiT0hC3CkrNe06T/CuyUEPsIcyXMio2ps/1AcHsDhmNcQhltNRNkGWHfFJ5Kj+5bs4kcpHuEB/uS/OJ9qrA8bfdUH74TbKfwWG218w7UpWEux/hqUsOQofvXey9JGIAVnF1GlVrWzIxNTDFD+rfrmCLsMnYaIQQ=";
 
-export default class PlexDB {
-	/**
-	 * Create new Plex database at `path`.
-	 */
-	public static async createNew (path: string) {
-		if (typeof path !== "string") throw new Error("Supply a valid path string!");
-		if (!(await stat(dirname(path))).isDirectory()) throw new Error("Cannot create DB here! " + path);
+const db = new PlexServer(resolve("db"));
 
-		await mkdir(path);
-		await Promise.all([
-			writeFile(join(path, ".plexdb"), JSON.stringify({
-				collections: [],
-				indexes: {},
-				name: "db0",
-			} as PlexMeta), "utf-8"),
-			mkdir(join(path, "index")),
-			mkdir(join(path, "data")),
-		]);
-	};
+class User {
+	public username: string;
+	public id: UUID;
+}
 
-	private readonly key: [publickey: string, privatekey: string];
-	private readonly root: string;
+(async () => {
+	const userCollection = db.collection("user", new User(), {
+		id: {},
+		username: {
+			required: true,
+			default() {
+				return randomBytes(32).toString("base64")
+			},
+			index: true,
+			unique: true,
+		}
+	});
 
-	private meta: PlexMeta;
+	const user = await userCollection.findOne({
+		username: "UM2WLsIxHnCKnRkp5TRD3RXtyjjdGvSty5Zq4Frp4AU="
+	});
 
-	constructor (rootpath: string) {
-		if (!statSync(rootpath).isDirectory()) throw new Error("Path is not a directory!");
-		if (!existsSync(join(rootpath, ".plexdb"))) throw new Error("Path is not a Plex database!");
-		this.root = rootpath;
-		
-		this.meta = JSON.parse(readFileSync(join(rootpath, ".plexdb"), "utf-8"));
-	};
-};
+	log(user);
+
+})();

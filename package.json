@@ -6,14 +6,17 @@
     "db",
     "lightweight",
     "real-time",
-    "encrypted",
-    "security"
+	"database"
   ],
   "author": "paincooperation",
   "license": "UNLICENSED",
   "types": "types/main.d.ts",
-  "description": "A secure and fast database solution for real time, node apps.",
+  "description": "A lightweight database solution for real time, node apps.",
   "devDependencies": {
     "@types/node": "^22.13.4"
+  },
+  "dependencies": {
+    "socket.io": "^4.8.1",
+    "socket.io-client": "^4.8.1"
   }
 }
