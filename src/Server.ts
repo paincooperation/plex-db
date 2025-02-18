@@ -54,10 +54,9 @@ export default class PlexDB {
 		},
 		read: async (path : string): Promise<any> => {
 			if (this.storage.cache.has(path)) return this.storage.cache[path];
-			path = this.storage.prefix(path);
-			if (!existsSync(path)) return void 0;
+			if (!existsSync(this.storage.prefix(path))) return void 0;
 			const data = JSON.parse(
-				await readFile(path, "utf-8")
+				await readFile(this.storage.prefix(path), "utf-8")
 			);
 			this.storage.cache[path] = data;
 			return data;
