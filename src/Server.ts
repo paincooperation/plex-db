@@ -63,10 +63,9 @@ export default class PlexDB {
 			return data;
 		},
 		write: async (path : string, data : any) => {
-			this.storage.cache[path] = data;
 			path = this.storage.prefix(path);
-			if (!existsSync(dirname(path)))
-				await mkdir(dirname(path), {recursive: true});
+			this.storage.cache[path] = data;
+			await mkdir(dirname(path), {recursive: true});
 			return await writeFile(
 				path,
 				JSON.stringify(data),
@@ -74,22 +73,26 @@ export default class PlexDB {
 			);
 		},
 		exists: (path : string): boolean => {
-			return this.storage.cache.has(path) ? true : existsSync(this.storage.prefix(path));
+			path = this.storage.prefix(path);
+			return this.storage.cache.has(path) ? true : existsSync(path);
 		},
 		list: async (path : string): Promise <string[]> => {
+			path = this.storage.prefix(path);
 			if (!this.storage.exists(path)) return void 0;
-			return await readdir(this.storage.prefix(path), "utf-8");
+			return await readdir(path, "utf-8");
 		},
 		tree: async (path : string) => {
+			path = this.storage.prefix(path);
 			if (!this.storage.exists(path)) return void 0;
-			return await readdir(this.storage.prefix(path), {
+			return await readdir(path, {
 				recursive: true,
 				encoding: "utf-8",
 			});
 		},
 		remove: async (path : string) => {
+			path = this.storage.prefix(path);
 			this.storage.cache.delete(this.storage.prefix(path));
-			if (this.storage.exists(path)) await rm(this.storage.prefix(path), {
+			if (this.storage.exists(path)) await rm(path, {
 				force: true,
 				recursive: true,
 			});
