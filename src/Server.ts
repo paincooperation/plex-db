@@ -1,13 +1,12 @@
 import { generateKeyPairSync, randomUUID, UUID } from "crypto";
 import * as EventEmitter from "events";
-import { existsSync, readFileSync } from "fs";
+import { existsSync, fdatasync, readFileSync } from "fs";
 import { stat, mkdir, writeFile, readFile, readdir, rm } from "fs/promises";
 import { normalize, resolve } from "path";
 import { dirname, join } from "path/posix";
 
 export type PlexMeta = {
 	name: string;
-	indexes: Record<string, string>;
 };
 
 export default class PlexDB {
@@ -22,8 +21,6 @@ export default class PlexDB {
 			await mkdir(path);
 		await Promise.all([
 			writeFile(join(path, ".plexmeta"), JSON.stringify({
-				collections: [],
-				indexes: {},
 				name: "db0",
 			} as PlexMeta), "utf-8"),
 			mkdir(join(path, "index")),
@@ -35,11 +32,12 @@ export default class PlexDB {
 	private meta: PlexMeta;
 
 	public storage = {
+		cacheSize: 10000,
 		cache: new Map <string, any> (),
 		cacheClear: setInterval(() => {
-			if (this.storage.cache.size < 10000) return;
+			if (this.storage.cache.size < this.storage.cacheSize) return;
 			var keys = this.storage.cache.keys();
-			while (this.storage.cache.size >= 10000)
+			while (this.storage.cache.size >= this.storage.cacheSize)
 				for (let i = 0; i < 200; i++)
 					this.storage.cache.delete(keys.next().value);
 		}, 50),
@@ -55,16 +53,14 @@ export default class PlexDB {
 			return p;
 		},
 		read: async (path : string): Promise<any> => {
-			if (this.storage.cache.has(path)) return this.storage.cache[path];
 			path = this.storage.prefix(path);
-
+			if (this.storage.cache.has(path)) return this.storage.cache[path];
 			if (!existsSync(path)) return void 0;
-			return JSON.parse(
-				await readFile(
-					path,
-					"utf-8"
-				)
+			const data = JSON.parse(
+				await readFile(path, "utf-8")
 			);
+			this.storage.cache[path] = data;
+			return data;
 		},
 		write: async (path : string, data : any) => {
 			this.storage.cache[path] = data;
@@ -113,10 +109,9 @@ export default class PlexDB {
 		query: [query: Partial<Data>, result: Data[]];
 	}>();
 
-	private readonly autosave = setInterval(() => {
-		if (this.root && this.meta)
-			this.storage.write(join(".plexmeta"), this.meta);
-	}, 5000);
+	public close () {
+		clearInterval(this.storage.cacheClear);
+	}
 
 	constructor (db_folfer: string) {
 		this.root = resolve(db_folfer);
